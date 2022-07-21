@@ -21,10 +21,27 @@ import tw from 'tailwind-react-native-classnames';
 import { validateEmail, validatePassword } from "./../../validations/validation";
 import { FormStyles } from "./../../StylesClass/FormStyles";
 
+import { useDispatch } from 'react-redux';
+import { signIn } from '../../features/auth/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
 export default function LoginV2(props) {
+    const [token, setToken] = useState('');
+    const dispatch = useDispatch();
+
+    async function save(value) {
+        try {
+            await AsyncStorage.setItem('@token', value);
+            dispatch(signIn(value));
+            console.log('data saved');
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     const [state, setState] = useState({
         email: "",
         password: "",
@@ -44,8 +61,10 @@ export default function LoginV2(props) {
                         <View style={{ marginBottom: .5, height: 60, }}>
                             <TextInput
                                 style={{ height: 45, borderBottomWidth: 1, borderBottomColor: "gray" }}
-                                onChangeText={(text) => setState({ ...state, email: text.toLocaleLowerCase().trim() })}
-                                value={state.email}
+                                // onChangeText={(text) => setState({ ...state, email: text.toLocaleLowerCase().trim() })}
+                                // value={state.email}
+                                onChangeText={setToken}
+                                value={token}
                                 placeholder="username"
                                 keyboardType="email-address"
                                 placeholderTextColor="gray"
@@ -66,7 +85,8 @@ export default function LoginV2(props) {
                         </View>
                         <TouchableOpacity
                             style={FormStyles.button}
-                            onPress={() => onSubmit()}>
+                            onPress={() => save(token)}
+                        >
                             {isLoading ? <ActivityIndicator color="#fafafa" /> : <Text style={tw.style("text-gray-100 text-lg py-2 text-center font-semibold")}>Sign In</Text>}
 
                         </TouchableOpacity>
